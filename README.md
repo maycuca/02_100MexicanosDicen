@@ -1,157 +1,202 @@
-# Lo que 100 Mexicanos dicen
+<div align="center">
 
-Juego de encuestas por equipos para jugar en la sala de tu casa. Una laptop conectada a la **TV** muestra el tablero; el **presentador** controla la partida desde su celular y cada **jugador** se une desde el suyo escaneando un código QR. Todo corre en tu red local: no hace falta internet ni crear cuentas.
+# 🎤 Lo que 100 Mexicanos dicen
 
-> **Versión 1.0** — 100 preguntas originales de cultura popular mexicana, cine, música, TV, fiestas, comida y deportes.
+**El juego de encuestas por equipos para la sala de tu casa: la TV es el tablero, un celular es el presentador y todos los demás juegan desde el suyo.**
 
----
+[![Versión](https://img.shields.io/badge/versión-1.0.0-ff6b35?style=for-the-badge)](https://github.com/maycuca/02_100MexicanosDicen)
+[![Java](https://img.shields.io/badge/Java-25-c4201c?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-4-6db33f?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-19-149eca?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![SQLite](https://img.shields.io/badge/SQLite-local-003b57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
 
-## Cómo se juega
+[![Pruebas backend](https://img.shields.io/badge/pruebas_backend-448_✓-3c8a3c?style=flat-square)](#-calidad)
+[![Pruebas frontend](https://img.shields.io/badge/pruebas_frontend-145_✓-3c8a3c?style=flat-square)](#-calidad)
+[![E2E](https://img.shields.io/badge/partidas_e2e-34_✓-3c8a3c?style=flat-square)](#-calidad)
+[![Red local](https://img.shields.io/badge/sin_internet-solo_tu_red_Wi--Fi-ffd166?style=flat-square)](#-privacidad-y-red-local)
 
-1. **Empieza.** En la laptop abre el juego y pulsa **EMPEZAR**. En **AJUSTES** eliges las rondas (3–8), la meta de puntos, el temporizador por turno y si al acabarse el tiempo se marca una X automática.
-2. **Escanea.** La TV muestra dos QR:
-   - **Presentador**: lo escanea una sola persona; desde su celular controla la partida.
-   - **Jugadores**: cada participante lo escanea, escribe su nombre y elige equipo (**Rojo** o **Verde**). El primero de cada equipo es el **capitán** y puede ponerle nombre.
-3. **Cara a cara.** En cada ronda, un jugador de cada equipo compite por el **buzzer** en su celular.
-   - Si el equipo que ganó el buzzer abre la **respuesta #1**, se queda con el turno.
-   - Si abre otra o se le acaba el tiempo, el turno pasa al otro equipo. Ese equipo gana el turno con una respuesta **más alta**; si falla, el turno regresa al primero.
-4. **Tres X.** El equipo en turno intenta abrir todas las respuestas. Si lo logra antes de su tercera X, gana los puntos de la ronda.
-5. **Robo.** Con tres X, el otro equipo tiene **una** oportunidad: si abre una respuesta correcta, se roba los puntos; si falla, se los queda el equipo de las tres X.
-6. **Final.** Las dos últimas rondas valen doble y triple. Gana quien llegue a la meta o tenga más puntos al terminar. La TV festeja con confeti y música, y cada celular muestra si su equipo ganó.
+<br>
 
-### Lo que hace cada pantalla
+<img src="docs/img/tablero.jpg" alt="Tablero en la TV: Equipo Rojo en turno con una X, dos respuestas reveladas, 46 puntos en juego y la cuenta regresiva" width="900">
 
-| Pantalla | Dónde | Qué hace |
-|---|---|---|
-| **TV** (`/screen/<código>`) | Laptop conectada a la TV | QR de entrada, jugadores por equipo, tablero con respuestas ocultas, X de cada equipo, cuenta regresiva, sonidos y pantalla de resultados. Sin controles. |
-| **Presentador** (`/host/<código>`) | Celular | Ve todas las respuestas. Revela respuestas, marca fallos y X, controla el temporizador (▶ ❚❚ ↺), cambia la pregunta, silencia la TV, pasa de ronda, inicia la revancha y regresa al menú principal. |
-| **Jugador** (`/play/<código>`) | Celular de cada participante | Buzzer, equipo en turno, marcador, cuenta regresiva, vibración en los momentos clave y resultado final. Nunca ve respuestas ocultas. |
+</div>
 
 ---
 
-## Requisitos
+## ✨ Qué puedes hacer
 
-- **JDK 25** (el backend usa Java 25; si tienes otra versión por defecto, ver más abajo).
-- **Node.js 22 o superior** (probado con Node 24).
-- La laptop y los celulares en la **misma red Wi-Fi**.
-
-## Inicio rápido
-
-```bash
-# Terminal 1 — backend (puerto 8080)
-cd backend
-export JAVA_HOME=$(/usr/libexec/java_home -v 25)   # macOS: selecciona el JDK 25
-./mvnw spring-boot:run
-
-# Terminal 2 — frontend (puerto 5173, visible en la red local)
-cd frontend
-npm install
-npm run dev
-```
-
-Abre **http://localhost:5173** en la laptop, pulsa **EMPEZAR** y escanea los QR con los celulares.
-
-- **Si la IP de los QR no es la correcta** (por ejemplo, la laptop tiene varias redes), arranca el backend indicándola:
-  ```bash
-  ./mvnw spring-boot:run -Dspring-boot.run.arguments=--app.lan-address=192.168.x.y
-  ```
-- **Sonido:** se activa en **AJUSTES → Sonido** de la pantalla de título. El presentador puede silenciar la TV con el switch **Sonido de la TV**.
-
-### Probar sin celulares
-
-En **AJUSTES** pon **Prueba local** en **Sí** y pulsa EMPEZAR. En lugar de los QR verás las URL con los botones **Copiar** y **Abrir en pestaña nueva**. Cada pestaña del navegador es una sesión distinta, así que puedes tener la TV, el presentador y varios jugadores en una sola computadora.
-
----
-
-## Tecnología
-
-| Capa | Tecnología |
+| | |
 |---|---|
-| Backend | Java 25 · Spring Boot 4.1 (Web MVC, WebSocket/STOMP, Data JPA, Validation, Actuator, Flyway) |
-| Base de datos | SQLite (`backend/data/cien-mexicanos.db`, se crea sola) con migraciones Flyway |
-| Frontend | React 19 · TypeScript · Vite 8 · React Router · `@stomp/stompjs` · `qrcode.react` |
-| Tiempo real | STOMP sobre WebSocket nativo (`/ws`) |
-| Sonido | Web Audio API: todos los sonidos y la música se sintetizan en el navegador, sin archivos de audio |
-| Pruebas | JUnit 5 + MockMvc · Vitest + Testing Library · Playwright · colección Postman |
+| 📺 **Convertir tu TV en el tablero** | Respuestas ocultas que se voltean, puntos en juego, la X gigante de cada equipo, la cuenta regresiva y sonidos de programa de concurso. |
+| 📱 **Entrar escaneando un QR** | Sin cuentas ni apps: cada quien escanea el QR de **Jugadores**, escribe su nombre y elige **Equipo Rojo** o **Equipo Verde**. |
+| 🎙️ **Conducir desde tu celular** | El presentador ve todas las respuestas, las revela, marca fallos y X, controla el temporizador (▶ ❚❚ ↺) y puede **cambiar la pregunta** si ya salió. |
+| 🔔 **Ganar el buzzer** | En el cara a cara, el más rápido aprieta **¡YO!** en su celular. El celular vibra cuando le toca a tu equipo. |
+| 🏆 **Festejar al final** | Confeti, trofeo, marcador que cuenta hasta el puntaje final y música de fiesta. Cada celular dice si su equipo ganó. |
+| 🏷️ **Ponerle nombre a tu equipo** | El primero que entra a cada equipo es el **capitán** y elige el nombre. |
+| 🧪 **Probar sin celulares** | Con **Prueba local** juegas todo en pestañas de una sola computadora. |
+| ❓ **100 preguntas** | Cine, música, tele, fiestas, comida, deportes y frases de todos los días, todas originales. |
 
-### Cómo está hecho
+## 🖼️ Capturas
 
-- **El servidor es la autoridad.** Las reglas del juego viven en el backend (`game/domain`, código puro sin Spring). Los clientes solo muestran el estado que reciben.
-- **Tiempo real.** Cada cambio publica por STOMP un snapshot del estado y los eventos (buzzer, respuesta revelada, X, fin de ronda…), con un número de versión para descartar mensajes viejos.
-- **Las salas viven en memoria.** Se cierran tras 2 horas sin actividad o cuando el presentador regresa al menú principal. En SQLite se guardan el banco de preguntas y el historial de partidas.
-- **Contrato primero.** La API REST está en OpenAPI 3.1 y los mensajes en AsyncAPI 3.0. Los tipos del frontend se generan del contrato.
-- **Privacidad de las respuestas.** La TV y los jugadores reciben la vista pública, sin el texto de las respuestas ocultas; solo el presentador ve el tablero completo.
+<table>
+  <tr>
+    <td width="50%"><img src="docs/img/titulo.jpg" alt="Pantalla de título con papel picado y el menú EMPEZAR / AJUSTES"></td>
+    <td width="50%"><img src="docs/img/qr.png" alt="Pantalla de la TV con los QR de presentador y jugadores y los jugadores de cada equipo"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Pantalla de título de videojuego</b></td>
+    <td align="center"><b>Escanea y únete a un equipo</b></td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/img/resultados.jpg" alt="Resultados en la TV: gana Equipo Rojo con confeti y trofeo"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><b>Resultados de fiesta</b></td>
+  </tr>
+</table>
 
----
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/img/presentador.png" alt="Pantalla del presentador con el temporizador, la pregunta destacada y las respuestas" width="260"></td>
+    <td align="center" width="33%"><img src="docs/img/jugador.png" alt="Celular de un jugador cuando le toca a su equipo" width="260"></td>
+    <td align="center" width="33%"><img src="docs/img/jugador-resultado.png" alt="Celular de un jugador del equipo ganador: ¡Ganaron!" width="260"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>El presentador lo controla todo</b></td>
+    <td align="center"><b>¡Le toca a tu equipo!</b></td>
+    <td align="center"><b>¡Ganaron!</b></td>
+  </tr>
+</table>
 
-## Estructura
+> El diseño es de **fiesta mexicana**: papel picado, colores vivos, letras grandes con relieve y un tablero pensado para leerse desde el sillón. El logotipo, los sonidos y la música son originales y se generan en el navegador.
 
-```
-specs/                       Spec-Driven Development: constitución y una carpeta por feature
-  constitution.md            principios del proyecto
-  001-juego-base/            spec, plan, modelo de datos, tareas, trazabilidad
-    contracts/               openapi.yaml y asyncapi.yaml (contrato único del sistema)
-  002 … 008/                 experiencia de juego, título, prueba local, control del presentador,
-                             reglas del cara a cara, celebración y cambio de pregunta
-backend/                     Spring Boot (paquete mx.cienmexicanos)
-  src/main/java/…/game/domain   reglas del juego (sin dependencias de framework)
-  src/main/resources/db/migration   esquema y banco de preguntas (V1–V4)
-frontend/                    React + Vite
-  src/features/              title · screen (TV) · presenter · player · localtest · thanks
-  src/shared/                api (tipos generados) · realtime · audio · session · ui
-  e2e/                       pruebas Playwright (TV + presentador + jugadores)
-postman/                     colección derivada del contrato y su generador
-```
+## 🎮 Cómo se juega
 
----
+1. **Cara a cara.** Un jugador de cada equipo compite por el buzzer.
+   - Si el equipo del buzzer abre la **#1**, se queda con el turno.
+   - Si abre otra o se le acaba el tiempo, el otro equipo tiene su oportunidad: gana el turno si abre una respuesta **más alta**, y si falla, el turno regresa al primero.
+2. **Tres X.** El equipo en turno intenta abrir todo el tablero antes de su tercera X.
+3. **Robo.** Con tres X, el otro equipo tiene **una** oportunidad: si acierta, se roba los puntos; si falla, se los queda el equipo de las tres X.
+4. **Final.** Las dos últimas rondas valen **doble** y **triple**. Gana quien llegue a la meta o tenga más puntos al terminar.
 
-## Pruebas
+## 🚀 Empezar
+
+**Requisitos:** Java 25, Node.js 22 o superior, y la laptop y los celulares en la **misma red Wi-Fi**.
 
 ```bash
-# Backend (usa siempre el JDK 25)
-cd backend
-./mvnw verify                  # unitarias, integración y API
-./mvnw verify -Pacceptance     # aceptación de caja negra (HTTP + STOMP)
+git clone https://github.com/maycuca/02_100MexicanosDicen.git
+cd 02_100MexicanosDicen
 
-# Frontend
-cd frontend
-npm run lint                   # oxlint
-npm run typecheck
-npm test                       # Vitest
-npm run e2e                    # Playwright (necesita backend y frontend arriba)
+# Terminal 1: backend en :8080
+cd backend && ./mvnw spring-boot:run
 
-# Contrato (con el backend arriba)
-python3 postman/scripts/generate_collection.py
-postman collection run postman/collections/cien-mexicanos.postman_collection.json \
-  -e postman/environments/local.postman_environment.json
+# Terminal 2: frontend en :5173 (visible en tu red)
+cd frontend && npm install && npm run dev
 ```
 
-Cada criterio de aceptación (`AC-xx`) está ligado a sus pruebas en el `traceability.md` de su spec.
+Abre **http://localhost:5173** en la laptop conectada a la TV, pulsa **EMPEZAR** y escaneen los QR con sus celulares. 🎉
+
+<details>
+<summary><b>¿Tienes otra versión de Java por defecto?</b></summary>
+
+En macOS selecciona el JDK 25 antes de arrancar el backend:
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 25)
+```
+</details>
+
+<details>
+<summary><b>Los QR apuntan a una IP equivocada</b></summary>
+
+Si la laptop tiene varias redes, indica la IP de tu Wi-Fi al arrancar el backend:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.arguments=--app.lan-address=192.168.x.y
+```
+</details>
+
+<details>
+<summary><b>Probar sin celulares</b></summary>
+
+En **AJUSTES** pon **Prueba local** en **Sí** y pulsa **EMPEZAR**. En lugar de los QR verás las URL con **Copiar** y **Abrir en pestaña nueva**. Cada pestaña es una sesión distinta, así que en una sola computadora puedes tener la TV, el presentador y varios jugadores.
+</details>
+
+<details>
+<summary><b>Ajustes de la partida</b></summary>
+
+| Ajuste | Opciones | Por defecto |
+|---|---|---|
+| Rondas | 3 a 8 | 5 |
+| Meta de puntos | 50 a 1000 | 300 |
+| Temporizador | sin temporizador o de 10 a 60 s | 20 s |
+| X automática | marca una X cuando se acaba el tiempo | Sí |
+| Sonido | sonidos y música en la TV | No |
+| Prueba local | jugar en pestañas de una sola computadora | No |
+
+Se guardan en el navegador de la TV.
+</details>
+
+## 🔒 Privacidad y red local
+
+- **Todo se queda en tu casa.** El juego corre en tu laptop y en tu Wi-Fi: no necesita internet, cuentas ni servicios externos.
+- **Nadie hace trampa.** La TV y los celulares de los jugadores nunca reciben el texto de las respuestas ocultas; solo el presentador ve el tablero completo.
+- **QR de presentador de un solo uso.** Si alguien más lo escanea, ya no sirve. En la pantalla de QR de la TV se puede generar uno nuevo.
+- **Salas temporales.** Las partidas viven en memoria y se cierran tras 2 horas sin actividad o cuando el presentador regresa al **Menú principal**; entonces cada celular borra su sesión.
+- La base SQLite local (`backend/data/`) guarda el banco de preguntas y el historial de partidas, y nunca se sube al repositorio.
+
+## 🧱 Arquitectura
+
+```
+02_100MexicanosDicen/
+├── backend/    Java 25 · Spring Boot 4 · STOMP sobre WebSocket · SQLite + Flyway
+├── frontend/   React 19 · TypeScript · Vite 8 · React Router · Web Audio
+├── specs/      Constitución y especificaciones 001–008: la fuente de verdad
+├── postman/    Colección de pruebas del contrato
+└── docs/img/   Capturas de este README
+```
+
+- **El servidor es el árbitro.** Las reglas viven en `backend/…/game/domain` (código puro, sin framework). Los clientes solo muestran el estado que reciben.
+- **Tiempo real.** Cada cambio se publica por STOMP con un número de versión, así la TV y los celulares nunca muestran un estado viejo.
+- **Contrato primero.** La API está descrita en [OpenAPI](specs/001-juego-base/contracts/openapi.yaml) y los mensajes en [AsyncAPI](specs/001-juego-base/contracts/asyncapi.yaml); los tipos del frontend se generan de ahí.
+- **Sonido sin archivos.** Los efectos, el júbilo del público y la música final se sintetizan con Web Audio, así que funcionan sin internet.
+
+## ✅ Calidad
+
+| Módulo | Comando | Resultado |
+|---|---|---|
+| Backend | `./mvnw verify` | 229 pruebas ✓ |
+| Backend | `./mvnw verify -Pacceptance` | 219 pruebas de aceptación (HTTP + STOMP) ✓ |
+| Frontend | `npm test` | 145 pruebas ✓ |
+| Frontend | `npm run e2e` | 34 pruebas de partida completa (TV + presentador + jugadores) ✓ |
+| Frontend | `npm run lint` · `npm run build` | sin avisos ✓ |
+| Contrato | colección Postman | 122 peticiones, 0 fallos ✓ |
+
+Cada criterio de aceptación está ligado a sus pruebas en el `traceability.md` de su especificación.
+
+## 🛠️ Cómo se construyó
+
+El proyecto sigue **desarrollo guiado por especificaciones (SDD)**. Primero se escriben la [constitución](specs/constitution.md) y la especificación de cada feature en [`specs/`](specs): historias, criterios de aceptación y contratos. Después las implementan agentes de [Claude Code](https://claude.com/claude-code) especializados (`backend-dev`, `frontend-dev` y `qa-tester`, en [`.claude/agents/`](.claude/agents)), coordinados según [`CLAUDE.md`](CLAUDE.md).
+
+| Spec | Qué agregó |
+|---|---|
+| [001](specs/001-juego-base/spec.md) | Juego base: salas, QR, buzzer, tablero, robo y revancha |
+| [002](specs/002-experiencia-de-juego/spec.md) | Equipo en turno, X por equipo, temporizador, sonidos y vibración |
+| [003](specs/003-pantalla-de-titulo/spec.md) | Pantalla de título de videojuego y capitanes que nombran a su equipo |
+| [004](specs/004-prueba-local/spec.md) | Prueba local en pestañas, sin celulares |
+| [005](specs/005-control-del-presentador/spec.md) | Temporizador manual, júbilo y regresar al menú principal |
+| [006](specs/006-reglas-cara-a-cara/spec.md) | Cara a cara automático |
+| [007](specs/007-celebracion-y-cierre/spec.md) | Resultados de fiesta y "¡Gracias por jugar!" |
+| [008](specs/008-pregunta-del-presentador/spec.md) | Pregunta destacada y "Cambiar pregunta" |
+
+## 🗺️ Lo que viene
+
+- Probar la partida con celulares reales en distintas redes (sonido en Safari de iOS y vibración en Android).
+- Más preguntas: se agregan con una nueva migración en `backend/src/main/resources/db/migration/`.
 
 ---
 
-## Banco de preguntas
-
-Hay **100 preguntas** con 5 o 6 respuestas cada una. Los puntos de cada pregunta suman 100 o menos.
-
-- **Puntajes estimados:** las preguntas y los puntajes son originales del proyecto. Los puntajes son una estimación de las respuestas más comunes, no salen de una encuesta real.
-- **Preguntas por partida:** cada partida elige al azar una pregunta distinta por ronda. El presentador puede **cambiar la pregunta** durante el cara a cara si ya salió antes.
-- **Agregar o corregir preguntas:** crea una nueva migración en `backend/src/main/resources/db/migration/` (por ejemplo `V5__…sql`). No edites una migración que ya se aplicó, porque Flyway la valida.
-
----
-
-## Desarrollo
-
-El proyecto sigue **Spec-Driven Development**:
-
-`constitución → spec → plan → contrato → tareas → código → verificación`
-
-Antes de cambiar algo, lee la spec correspondiente en `specs/`. Si el cambio toca la API, actualiza primero el contrato, regenera los tipos (`npm run gen:api`) y la colección Postman. La guía completa para colaborar, incluidos los agentes de IA, está en [CLAUDE.md](CLAUDE.md).
-
-- **Identificadores:** el código, los identificadores y los commits van en inglés (Conventional Commits).
-- **Textos:** la interfaz y la documentación van en español.
-- **Identidad propia:** nombre, colores, sonidos y preguntas son originales; no se copian de ningún programa de televisión.
-
-### Pendiente
-
-- Prueba manual en una red local real con celulares (sonido en Safari de iOS y vibración en Android).
+<div align="center">
+<sub>Hecho con ☕ y mucha fiesta por <a href="https://github.com/maycuca">@maycuca</a></sub>
+</div>
