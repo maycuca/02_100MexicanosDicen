@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npx oxlint:*)",
+      "Bash(postman collection run:*)",
+      "Bash(python3 postman/scripts/generate_collection.py)"
+    ]
+  }
+}

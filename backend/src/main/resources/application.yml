@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: cien-mexicanos
+  datasource:
+    url: jdbc:sqlite:./data/cien-mexicanos.db
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      # SQLite admite un solo escritor; un pool pequeño evita "database is locked".
+      maximum-pool-size: 2
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: none   # el esquema lo maneja Flyway
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  address: 0.0.0.0   # accesible desde la LAN
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  # Si se define, se usa en lugar de la IP detectada para el QR (AC-04).
+  lan-address:
+  frontend-port: 5173
+  allowed-origin-patterns:
+    - "http://localhost:*"
+    - "http://127.0.0.1:*"
+    - "http://192.168.*.*:*"
+    - "http://10.*.*.*:*"
+    - "http://172.*.*.*:*"

@@ -1,0 +1,729 @@
+openapi: 3.1.0
+info:
+  title: Cien Mexicanos API
+  version: 0.8.0
+  description: |
+    API REST del juego "Cien Mexicanos" (spec 001-juego-base).
+    Las acciones del presentador requieren el header `X-Presenter-Token`.
+    Los cambios de estado se difunden por STOMP (ver `asyncapi.yaml`); las respuestas REST
+    devuelven el snapshot resultante para que el cliente que actúa no dependa del broadcast.
+servers:
+  - url: http://localhost:8080
+    description: Desarrollo local
+tags:
+  - name: network
+  - name: rooms
+  - name: players
+  - name: game
+  - name: questions
+
+paths:
+  /api/network-info:
+    get:
+      tags: [network]
+      operationId: getNetworkInfo
+      summary: IP de la LAN y puertos para construir la URL del QR (AC-04)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NetworkInfo" }
+
+  /api/rooms:
+    post:
+      tags: [rooms]
+      operationId: createRoom
+      summary: Crear sala (AC-01, AC-02)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateRoomRequest" }
+      responses:
+        "201":
+          description: Sala creada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CreateRoomResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/rooms/{code}:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+    delete:
+      tags: [rooms]
+      operationId: closeRoom
+      summary: Cerrar la sala y volver al menú principal (spec 005, AC-91). Publica ROOM_CLOSED antes de eliminarla
+      parameters:
+        - $ref: "#/components/parameters/PresenterToken"
+      responses:
+        "204": { description: Sala cerrada }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    get:
+      tags: [rooms]
+      operationId: getRoom
+      summary: Snapshot público de la sala (vista de jugador, AC-25)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RoomState" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/rooms/{code}/presenter-view:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    get:
+      tags: [rooms]
+      operationId: getPresenterView
+      summary: Snapshot completo para el presentador, incluye respuestas ocultas
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PresenterRoomState" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/rooms/{code}/presenter/claim:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+    post:
+      tags: [rooms]
+      operationId: claimPresenter
+      summary: Canjear el QR de presentador (un solo uso) por un presenterToken (AC-30)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ClaimPresenterRequest" }
+      responses:
+        "200":
+          description: Canje exitoso
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClaimPresenterResponse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/presenter/claim-token:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    post:
+      tags: [rooms]
+      operationId: regeneratePresenterClaim
+      summary: Generar un QR de presentador nuevo e invalidar el anterior (AC-33)
+      responses:
+        "200":
+          description: Nuevo token de canje
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PresenterClaim" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/rooms/{code}/players:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+    post:
+      tags: [players]
+      operationId: joinRoom
+      summary: Unirse a la sala (AC-05, AC-06, AC-07)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/JoinRoomRequest" }
+      responses:
+        "201":
+          description: Jugador registrado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JoinRoomResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/teams/{team}/name:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - name: team
+        in: path
+        required: true
+        schema: { $ref: "#/components/schemas/TeamId" }
+      - name: X-Player-Token
+        in: header
+        required: true
+        schema: { type: string }
+    put:
+      tags: [players]
+      operationId: renameTeam
+      summary: El capitán nombra a su equipo durante el LOBBY (spec 003, AC-62…AC-65)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RenameTeamRequest" }
+      responses:
+        "200":
+          description: Nombre actualizado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RoomState" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/players/me:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - name: X-Player-Token
+        in: header
+        required: true
+        schema: { type: string }
+    get:
+      tags: [players]
+      operationId: getMe
+      summary: Recuperar sesión del jugador (AC-09)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Player" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/rooms/{code}/start:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    post:
+      tags: [game]
+      operationId: startGame
+      summary: Iniciar partida (AC-10, AC-11)
+      responses:
+        "200": { $ref: "#/components/responses/PresenterState" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/rounds/current/answers/{answerId}/reveal:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+      - name: answerId
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+    post:
+      tags: [game]
+      operationId: revealAnswer
+      summary: Revelar una respuesta acertada (AC-15, AC-16, AC-17, AC-19). En FACE_OFF resuelve el cara a cara (spec 006, AC-92…AC-96); sin buzzer → 409 NO_ACTIVE_TEAM (AC-100)
+      responses:
+        "200": { $ref: "#/components/responses/PresenterState" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/rounds/current/strike:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    post:
+      tags: [game]
+      operationId: markStrike
+      summary: Marcar X al equipo en turno (AC-15, AC-16, AC-18, AC-19; spec 002 AC-40…AC-43). En FACE_OFF es un fallo sin X que pasa el turno (spec 005, AC-85). Sin equipo en turno → 409 NO_ACTIVE_TEAM
+      responses:
+        "200": { $ref: "#/components/responses/PresenterState" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/rounds/current/timer:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    post:
+      tags: [game]
+      operationId: controlTimer
+      summary: Iniciar, parar o restablecer el temporizador del turno (spec 005, AC-80, AC-81). Sin temporizador → 409 TIMER_DISABLED
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TimerRequest" }
+      responses:
+        "200": { $ref: "#/components/responses/PresenterState" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/rounds/current/question:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    post:
+      tags: [game]
+      operationId: changeQuestion
+      summary: Cambiar la pregunta de la ronda (spec 008, AC-122). Solo en FACE_OFF sin respuestas reveladas; sin preguntas disponibles → 409 NO_MORE_QUESTIONS
+      responses:
+        "200": { $ref: "#/components/responses/PresenterState" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/rounds/current/control:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    post:
+      tags: [game]
+      operationId: assignControl
+      summary: Corrección manual del control en el cara a cara (AC-15). Desde la spec 006 el cara a cara se resuelve solo (AC-92…AC-99)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AssignControlRequest" }
+      responses:
+        "200": { $ref: "#/components/responses/PresenterState" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/next-round:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    post:
+      tags: [game]
+      operationId: nextRound
+      summary: Pasar a la siguiente ronda o a GAME_OVER (AC-20, AC-22)
+      responses:
+        "200": { $ref: "#/components/responses/PresenterState" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/rematch:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    post:
+      tags: [game]
+      operationId: rematch
+      summary: Revancha con los mismos jugadores (AC-23)
+      responses:
+        "200": { $ref: "#/components/responses/PresenterState" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/rooms/{code}/sound:
+    parameters:
+      - $ref: "#/components/parameters/RoomCode"
+      - $ref: "#/components/parameters/PresenterToken"
+    post:
+      tags: [game]
+      operationId: setSound
+      summary: Silenciar o activar el sonido de la TV (spec 002, AC-53)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetSoundRequest" }
+      responses:
+        "200": { $ref: "#/components/responses/PresenterState" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/questions:
+    get:
+      tags: [questions]
+      operationId: listQuestions
+      summary: Banco de preguntas (solo presentador)
+      parameters:
+        - name: X-Presenter-Token
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Question" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+components:
+  parameters:
+    RoomCode:
+      name: code
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/RoomCode" }
+    PresenterToken:
+      name: X-Presenter-Token
+      in: header
+      required: true
+      schema: { type: string }
+
+  responses:
+    PresenterState:
+      description: Estado resultante (vista del presentador)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/PresenterRoomState" }
+    BadRequest:
+      description: Petición inválida
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Unauthorized:
+      description: Falta la credencial
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Forbidden:
+      description: Credencial inválida para esta sala
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Conflict:
+      description: Acción no permitida en el estado actual
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+
+  schemas:
+    RoomCode:
+      type: string
+      pattern: "^[A-HJ-NP-Z]{4}$"
+      examples: ["KDMZ"]
+    TeamId:
+      type: string
+      enum: [A, B]
+    RoomStatus:
+      type: string
+      enum: [LOBBY, FACE_OFF, PLAYING, STEAL, ROUND_END, GAME_OVER]
+
+    NetworkInfo:
+      type: object
+      required: [lanAddress, backendPort, frontendPort]
+      properties:
+        lanAddress: { type: string, examples: ["192.168.1.42"] }
+        backendPort: { type: integer, examples: [8080] }
+        frontendPort: { type: integer, examples: [5173] }
+
+    CreateRoomRequest:
+      type: object
+      properties:
+        teamAName: { type: string, minLength: 1, maxLength: 24, default: Equipo Rojo, description: "Opcional; desde la spec 003 los nombra el capitán" }
+        teamBName: { type: string, minLength: 1, maxLength: 24, default: Equipo Verde, description: "Opcional; desde la spec 003 los nombra el capitán" }
+        rounds: { type: integer, minimum: 3, maximum: 8, default: 5 }
+        targetScore: { type: integer, minimum: 50, maximum: 1000, default: 300 }
+        turnSeconds:
+          description: 0 = sin temporizador; si no, 10–60 (spec 002, AC-46)
+          default: 20
+          oneOf:
+            - { type: integer, const: 0 }
+            - { type: integer, minimum: 10, maximum: 60 }
+        autoStrikeOnTimeout:
+          type: boolean
+          default: true
+          description: Al vencer el temporizador se aplica una X al equipo en turno (AC-48)
+
+    CreateRoomResponse:
+      type: object
+      required: [code, presenterToken, presenterClaimToken, state]
+      properties:
+        code: { $ref: "#/components/schemas/RoomCode" }
+        presenterToken:
+          type: string
+          description: Credencial de la pantalla (laptop) que creó la sala
+        presenterClaimToken:
+          type: string
+          description: Token de un solo uso para el QR de presentador (AC-30)
+        state: { $ref: "#/components/schemas/PresenterRoomState" }
+
+    ClaimPresenterRequest:
+      type: object
+      required: [claimToken]
+      properties:
+        claimToken: { type: string }
+
+    ClaimPresenterResponse:
+      type: object
+      required: [presenterToken, state]
+      properties:
+        presenterToken: { type: string }
+        state: { $ref: "#/components/schemas/PresenterRoomState" }
+
+    PresenterClaim:
+      type: object
+      required: [claimToken]
+      properties:
+        claimToken: { type: string }
+
+    RenameTeamRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 20, description: Se recortan espacios antes de validar }
+
+    JoinRoomRequest:
+      type: object
+      required: [name, team]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 20 }
+        team: { $ref: "#/components/schemas/TeamId" }
+
+    JoinRoomResponse:
+      type: object
+      required: [player, playerToken]
+      properties:
+        player: { $ref: "#/components/schemas/Player" }
+        playerToken: { type: string }
+
+    SetSoundRequest:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: { type: boolean }
+
+    TimerRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [START, PAUSE, RESET]
+          description: START corre desde lo que queda (o completo si queda 0); PAUSE congela; RESET detiene y deja la duración completa (AC-80)
+
+    AssignControlRequest:
+      type: object
+      required: [team]
+      properties:
+        team: { $ref: "#/components/schemas/TeamId" }
+
+    Player:
+      type: object
+      required: [id, name, team, connected]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        team: { $ref: "#/components/schemas/TeamId" }
+        connected: { type: boolean }
+
+    Team:
+      type: object
+      required: [id, name, score, players, captainId]
+      properties:
+        id: { $ref: "#/components/schemas/TeamId" }
+        name: { type: string }
+        captainId:
+          description: Primer jugador que se unió al equipo; puede nombrarlo (spec 003, AC-62)
+          type: ["string", "null"]
+          format: uuid
+        score: { type: integer }
+        players:
+          type: array
+          items: { $ref: "#/components/schemas/Player" }
+
+    BoardSlot:
+      description: Casilla del tablero. `text` y `points` solo vienen si `revealed` es true (AC-25).
+      type: object
+      required: [position, revealed]
+      properties:
+        position: { type: integer, minimum: 1, maximum: 8 }
+        revealed: { type: boolean }
+        text: { type: ["string", "null"] }
+        points: { type: ["integer", "null"] }
+
+    PresenterBoardSlot:
+      type: object
+      required: [answerId, position, revealed, text, points]
+      properties:
+        answerId: { type: integer, format: int64 }
+        position: { type: integer }
+        revealed: { type: boolean }
+        text: { type: string }
+        points: { type: integer }
+
+    RoundState:
+      type: object
+      required: [number, multiplier, question, strikes, pot, board, activeTeam, strikesByTeam, turnDeadline, timerRunning, timerRemainingMs]
+      properties:
+        number: { type: integer, minimum: 1 }
+        multiplier: { type: integer, enum: [1, 2, 3] }
+        question: { type: string }
+        strikes: { type: integer, minimum: 0, maximum: 3 }
+        pot: { type: integer, description: Bote acumulado de la ronda (AC-17) }
+        activeTeam:
+          description: Equipo en turno (spec 002, AC-35); null si nadie está respondiendo
+          oneOf: [{ $ref: "#/components/schemas/TeamId" }, { type: "null" }]
+        strikesByTeam:
+          description: X que cuentan en la ronda por equipo (AC-41)
+          type: object
+          required: [A, B]
+          properties:
+            A: { type: integer, minimum: 0, maximum: 3 }
+            B: { type: integer, minimum: 0, maximum: 3 }
+        turnDeadline:
+          description: Vencimiento del turno en ISO-8601 UTC (AC-47); solo mientras el temporizador corre (spec 005, AC-82)
+          type: ["string", "null"]
+          format: date-time
+        timerRunning:
+          description: El temporizador del turno está corriendo (spec 005, AC-82)
+          type: boolean
+        timerRemainingMs:
+          description: Detenido, milisegundos que quedan; corriendo, los que quedaban al iniciarlo (la cuenta usa turnDeadline). 0 si la sala no tiene temporizador (AC-82)
+          type: integer
+          minimum: 0
+        controllingTeam: { oneOf: [{ $ref: "#/components/schemas/TeamId" }, { type: "null" }] }
+        potWinner:
+          description: Equipo que se llevó el bote; solo en ROUND_END (AC-19, AC-20)
+          oneOf: [{ $ref: "#/components/schemas/TeamId" }, { type: "null" }]
+        faceOff:
+          type: object
+          properties:
+            playerA: { type: string, format: uuid }
+            playerB: { type: string, format: uuid }
+            buzzWinner: { type: ["string", "null"], format: uuid }
+            firstTeam:
+              description: Equipo del buzzer (primer intento del cara a cara); null antes del buzzer (spec 006, AC-101)
+              oneOf: [{ $ref: "#/components/schemas/TeamId" }, { type: "null" }]
+            firstAnswerPosition:
+              description: Posición que abrió el primer equipo; null si no abrió ninguna (spec 006, AC-101)
+              type: ["integer", "null"]
+        board:
+          type: array
+          items: { $ref: "#/components/schemas/BoardSlot" }
+
+    RoomState:
+      type: object
+      required: [code, status, totalRounds, targetScore, teams, presenterConnected, turnSeconds, autoStrikeOnTimeout, soundEnabled, version]
+      properties:
+        code: { $ref: "#/components/schemas/RoomCode" }
+        status: { $ref: "#/components/schemas/RoomStatus" }
+        presenterConnected:
+          type: boolean
+          description: true cuando ya se canjeó el QR de presentador (AC-32)
+        turnSeconds: { type: integer, description: "0 = sin temporizador (AC-46)" }
+        autoStrikeOnTimeout: { type: boolean }
+        soundEnabled: { type: boolean, description: Sonido de la TV activado (AC-53) }
+        totalRounds: { type: integer }
+        targetScore: { type: integer }
+        teams:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: { $ref: "#/components/schemas/Team" }
+        round: { oneOf: [{ $ref: "#/components/schemas/RoundState" }, { type: "null" }] }
+        winner:
+          description: Solo en GAME_OVER; "TIE" para empate
+          type: ["string", "null"]
+          enum: [A, B, TIE, null]
+        version:
+          type: integer
+          description: Se incrementa con cada cambio; el cliente descarta snapshots más viejos.
+
+    PresenterRoomState:
+      allOf:
+        - $ref: "#/components/schemas/RoomState"
+        - type: object
+          properties:
+            presenterBoard:
+              type: array
+              items: { $ref: "#/components/schemas/PresenterBoardSlot" }
+
+    Question:
+      type: object
+      required: [id, text, answers]
+      properties:
+        id: { type: integer, format: int64 }
+        text: { type: string }
+        answers:
+          type: array
+          items:
+            type: object
+            required: [id, text, points, position]
+            properties:
+              id: { type: integer, format: int64 }
+              text: { type: string }
+              points: { type: integer }
+              position: { type: integer }
+
+    GameEvent:
+      description: Evento puntual publicado en /topic/rooms/{code}/events (asyncapi.yaml)
+      type: object
+      required: [type, version]
+      properties:
+        type:
+          type: string
+          enum: [PLAYER_JOINED, PRESENTER_CLAIMED, PLAYER_LEFT, GAME_STARTED, BUZZ_WON, ANSWER_REVEALED,
+                 STRIKE, CONTROL_ASSIGNED, STEAL_STARTED, ROUND_ENDED, GAME_OVER,
+                 TURN_CHANGED, TIMER_EXPIRED, SOUND_TOGGLED, TEAM_RENAMED,
+                 TIMER_CHANGED, FACE_OFF_MISS, ROOM_CLOSED, QUESTION_CHANGED]
+        version: { type: integer }
+        playerId: { type: string, format: uuid }
+        team: { $ref: "#/components/schemas/TeamId" }
+        position: { type: integer }
+        points: { type: integer }
+        strikes:
+          type: integer
+          description: En STRIKE, las X del equipo `team` en strikesByTeam (AC-43). FACE_OFF_MISS no lleva strikes (spec 005, AC-85)
+        enabled:
+          type: boolean
+          description: Solo en SOUND_TOGGLED
+
+    StompError:
+      description: Error enviado a /user/queue/errors (asyncapi.yaml)
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [NOT_YOUR_TURN, INVALID_STATE, ROOM_NOT_FOUND, UNAUTHORIZED]
+        message: { type: string }
+
+    Problem:
+      description: RFC 9457 Problem Details
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code:
+          type: string
+          description: Código de error estable para el frontend
+          examples: [ROOM_NOT_FOUND, CLAIM_USED, CLAIM_INVALID, NAME_TAKEN, ROOM_NOT_IN_LOBBY, INVALID_STATE, TEAM_EMPTY,
+                     UNAUTHORIZED, FORBIDDEN, ANSWER_NOT_FOUND, NO_ACTIVE_TEAM, NOT_CAPTAIN, TEAM_NAME_TAKEN, NOT_ENOUGH_QUESTIONS, TIMER_DISABLED, NO_MORE_QUESTIONS, VALIDATION_ERROR]

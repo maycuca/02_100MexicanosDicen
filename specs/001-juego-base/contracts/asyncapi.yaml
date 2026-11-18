@@ -1,0 +1,98 @@
+asyncapi: 3.0.0
+info:
+  title: Cien Mexicanos — Tiempo real
+  version: 0.8.0
+  description: |
+    Mensajería STOMP sobre WebSocket (spec 001-juego-base).
+    - Endpoint: `ws://<host>:8080/ws` (WebSocket nativo, sin SockJS).
+    - Header CONNECT: `X-Player-Token` (jugador) o `X-Presenter-Token` (presentador/pantalla).
+    - Con `X-Presenter-Token` se puede suscribir tanto a `/presenter` como a `/state` (la TV usa `/state`
+      para no mostrar respuestas ocultas).
+    - Los payloads de estado reutilizan los esquemas de `openapi.yaml`.
+    - Un cliente que se reconecta pide el snapshot por REST (`GET /api/rooms/{code}`) y luego
+      aplica solo mensajes con `version` mayor.
+    - Spec 005: `TIMER_CHANGED` (iniciar/parar/restablecer), `FACE_OFF_MISS` (fallo sin X en el cara a cara) y
+      `ROOM_CLOSED` (la sala se cerró; los clientes vuelven al inicio).
+    - Spec 006: el cara a cara se resuelve solo; al terminar se publica `CONTROL_ASSIGNED` + `TURN_CHANGED`.
+    - Spec 008: `QUESTION_CHANGED` cuando el presentador cambia la pregunta de la ronda.
+
+servers:
+  local:
+    host: localhost:8080
+    pathname: /ws
+    protocol: stomp
+
+channels:
+  roomState:
+    address: /topic/rooms/{code}/state
+    description: Snapshot público completo tras cada cambio (AC-08, AC-14, AC-24, AC-25)
+    parameters:
+      code: { description: Código de sala }
+    messages:
+      roomState: { $ref: "#/components/messages/RoomState" }
+
+  presenterState:
+    address: /topic/rooms/{code}/presenter
+    description: Snapshot del presentador (con respuestas ocultas). Solo se permite suscribir con un X-Presenter-Token válido.
+    parameters:
+      code: { description: Código de sala }
+    messages:
+      presenterState: { $ref: "#/components/messages/PresenterRoomState" }
+
+  roomEvents:
+    address: /topic/rooms/{code}/events
+    description: Eventos puntuales para animaciones y sonidos
+    parameters:
+      code: { description: Código de sala }
+    messages:
+      gameEvent: { $ref: "#/components/messages/GameEvent" }
+
+  buzz:
+    address: /app/rooms/{code}/buzz
+    description: El jugador designado presiona el buzzer (AC-13, AC-14, AC-27)
+    parameters:
+      code: { description: Código de sala }
+    messages:
+      buzz: { $ref: "#/components/messages/Buzz" }
+
+  userErrors:
+    address: /user/queue/errors
+    description: Errores dirigidos solo al cliente que envió el mensaje
+    messages:
+      error: { $ref: "#/components/messages/Error" }
+
+operations:
+  receiveRoomState:
+    action: receive
+    channel: { $ref: "#/channels/roomState" }
+  receivePresenterState:
+    action: receive
+    channel: { $ref: "#/channels/presenterState" }
+  receiveEvents:
+    action: receive
+    channel: { $ref: "#/channels/roomEvents" }
+  sendBuzz:
+    action: send
+    channel: { $ref: "#/channels/buzz" }
+  receiveErrors:
+    action: receive
+    channel: { $ref: "#/channels/userErrors" }
+
+components:
+  messages:
+    RoomState:
+      payload:
+        $ref: "./openapi.yaml#/components/schemas/RoomState"
+    PresenterRoomState:
+      payload:
+        $ref: "./openapi.yaml#/components/schemas/PresenterRoomState"
+    Buzz:
+      payload:
+        type: object
+        description: Cuerpo vacío; el jugador se identifica por el token de la sesión STOMP.
+    Error:
+      payload:
+        $ref: "./openapi.yaml#/components/schemas/StompError"
+    GameEvent:
+      payload:
+        $ref: "./openapi.yaml#/components/schemas/GameEvent"
