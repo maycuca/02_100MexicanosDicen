@@ -12,7 +12,7 @@ Este proyecto sigue **Spec-Driven Development**. Antes de tocar código, lee en 
 4. `specs/<NNN-feature>/contracts/openapi.yaml` (REST) y `asyncapi.yaml` (STOMP).
 5. `specs/<NNN-feature>/tasks.md` — qué falta y quién lo hace.
 
-Specs: **`001-juego-base`** (implementada), **`002-experiencia-de-juego`** (implementada), **`003-pantalla-de-titulo`** (implementada), **`004-prueba-local`** (implementada), **`005-control-del-presentador`** (implementada), **`006-reglas-cara-a-cara`** (implementada), **`007-celebracion-y-cierre`** (implementada), **`008-pregunta-del-presentador`** (implementada). El contrato único del sistema vive en `specs/001-juego-base/contracts/`.
+Specs: **`001-juego-base`** (implementada), **`002-experiencia-de-juego`** (implementada), **`003-pantalla-de-titulo`** (implementada), **`004-prueba-local`** (implementada), **`005-control-del-presentador`** (implementada), **`006-reglas-cara-a-cara`** (implementada), **`007-celebracion-y-cierre`** (implementada), **`008-pregunta-del-presentador`** (implementada), **`009-despliegue-aws`** (implementada; Docker + AWS, ver `docs/despliegue-aws.md`). El contrato único del sistema vive en `specs/001-juego-base/contracts/`.
 
 ### Reglas de trabajo
 - **Sin tarea no hay código.** Cada cambio cita su tarea (`T204`) y los criterios que cubre (`AC-14`).
@@ -60,6 +60,7 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 25)
 | Frontend: lint | `npm run lint` (oxlint) |
 | E2E | `cd frontend && npm run e2e` (necesita el backend arriba) |
 | Tipos desde OpenAPI | `cd frontend && npm run gen:api` |
+| Imagen Docker (spec 009) | `docker compose up -d --build` (requiere `.env` con `PUBLIC_IP`; puerto 80) |
 | Colección Postman | `python3 postman/scripts/generate_collection.py` y luego `postman collection run postman/collections/cien-mexicanos.postman_collection.json -e postman/environments/local.postman_environment.json` |
 
 Nunca hagas `postman workspace push` sin el consentimiento del usuario.

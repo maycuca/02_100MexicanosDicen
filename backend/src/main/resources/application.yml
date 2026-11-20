@@ -39,3 +39,5 @@ app:
     - "http://192.168.*.*:*"
     - "http://10.*.*.*:*"
     - "http://172.*.*.*:*"
+    # Spec 009 (AC-126): origen público en AWS, p. ej. http://203.0.113.10
+    - "${APP_PUBLIC_ORIGIN:http://localhost:*}"

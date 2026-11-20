@@ -3,3 +3,7 @@
 .vscode/
 *.log
 .claude/settings.local.json
+
+# Despliegue (spec 009)
+.env
+/data/

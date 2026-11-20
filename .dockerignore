@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/target
+**/test-results
+**/playwright-report
+**/coverage
+backend/data
+.git
+.idea
+.vscode
+.env
+docs
+postman
