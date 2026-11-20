@@ -422,8 +422,8 @@ export interface components {
             /** @default 300 */
             targetScore: number;
             /**
-             * @description 0 = sin temporizador; si no, 10–60 (spec 002, AC-46)
-             * @default 20
+             * @description 0 = sin temporizador; si no, 10–60 (spec 002, AC-46). Por defecto 10 desde la spec 010 (AC-134)
+             * @default 10
              */
             turnSeconds: 0 | number;
             /**

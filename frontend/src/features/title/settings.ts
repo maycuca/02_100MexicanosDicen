@@ -4,7 +4,7 @@ import type { CreateRoomRequest } from '../../shared/api/client'
 export type GameSettings = Pick<CreateRoomRequest, 'rounds' | 'targetScore' | 'turnSeconds' | 'autoStrikeOnTimeout'>
 
 /** Valores por defecto del contrato (openapi.yaml, CreateRoomRequest). */
-export const DEFAULT_SETTINGS: GameSettings = { rounds: 5, targetScore: 300, turnSeconds: 20, autoStrikeOnTimeout: true }
+export const DEFAULT_SETTINGS: GameSettings = { rounds: 5, targetScore: 300, turnSeconds: 10, autoStrikeOnTimeout: true } // spec 010, AC-134: turno de 10 s
 
 const range = (from: number, to: number, step: number) =>
   Array.from({ length: Math.floor((to - from) / step) + 1 }, (_, i) => from + i * step)

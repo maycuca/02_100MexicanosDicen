@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useKeepScreenOn } from '../../shared/device/keepScreenOn'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { ApiError, api, errorMessage, type PresenterRoomState, type TimerAction } from '../../shared/api/client'
 import { session } from '../../shared/session/session'
@@ -30,6 +31,7 @@ const ANSWERING: PresenterRoomState['status'][] = ['FACE_OFF', 'PLAYING', 'STEAL
  * Spec 006 (T1111, AC-102): el cara a cara se resuelve solo; sin "Asignar control", con pista del segundo intento.
  */
 export function HostPage() {
+  useKeepScreenOn() // spec 010, AC-129
   const { code = '' } = useParams()
   const [params] = useSearchParams()
   const navigate = useNavigate()

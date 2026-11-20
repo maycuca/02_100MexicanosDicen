@@ -12,7 +12,7 @@ public final class GameRules {
     public static final int NO_TIMER = 0;
     public static final int MIN_TURN_SECONDS = 10;
     public static final int MAX_TURN_SECONDS = 60;
-    public static final int DEFAULT_TURN_SECONDS = 20;
+    public static final int DEFAULT_TURN_SECONDS = 10; // spec 010, AC-134
 
     private GameRules() {}
 

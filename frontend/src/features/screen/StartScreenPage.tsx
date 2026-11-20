@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useKeepScreenOn } from '../../shared/device/keepScreenOn'
 import type { GameEvent } from '../../shared/realtime/messages'
 import { useGameSounds, useSoundActivation } from '../../shared/audio/useGameSounds'
 import { Link, useNavigate, useParams } from 'react-router'
@@ -25,6 +26,7 @@ import { LocalTestBanner, LocalTestLink, useLocalTestMode } from '../localtest'
  * fallo en el cara a cara (AC-86); con ROOM_CLOSED la TV vuelve a la pantalla de título (AC-91).
  */
 export function StartScreenPage() {
+  useKeepScreenOn() // spec 010, AC-129
   const { code = '' } = useParams()
   const navigate = useNavigate()
   const { baseUrl: lanBaseUrl, error: lanError } = useJoinBaseUrl()

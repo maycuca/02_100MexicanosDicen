@@ -12,7 +12,7 @@ Este proyecto sigue **Spec-Driven Development**. Antes de tocar código, lee en 
 4. `specs/<NNN-feature>/contracts/openapi.yaml` (REST) y `asyncapi.yaml` (STOMP).
 5. `specs/<NNN-feature>/tasks.md` — qué falta y quién lo hace.
 
-Specs: **`001-juego-base`** (implementada), **`002-experiencia-de-juego`** (implementada), **`003-pantalla-de-titulo`** (implementada), **`004-prueba-local`** (implementada), **`005-control-del-presentador`** (implementada), **`006-reglas-cara-a-cara`** (implementada), **`007-celebracion-y-cierre`** (implementada), **`008-pregunta-del-presentador`** (implementada), **`009-despliegue-aws`** (implementada; Docker + AWS, ver `docs/despliegue-aws.md`). El contrato único del sistema vive en `specs/001-juego-base/contracts/`.
+Specs: **`001-juego-base`** (implementada), **`002-experiencia-de-juego`** (implementada), **`003-pantalla-de-titulo`** (implementada), **`004-prueba-local`** (implementada), **`005-control-del-presentador`** (implementada), **`006-reglas-cara-a-cara`** (implementada), **`007-celebracion-y-cierre`** (implementada), **`008-pregunta-del-presentador`** (implementada), **`009-despliegue-aws`** (implementada; Docker + AWS, ver `docs/despliegue-aws.md`), **`010-pantalla-y-ajustes`** (implementada; pantalla encendida, sonido activado y turno de 10 s). El contrato único del sistema vive en `specs/001-juego-base/contracts/`.
 
 ### Reglas de trabajo
 - **Sin tarea no hay código.** Cada cambio cita su tarea (`T204`) y los criterios que cubre (`AC-14`).

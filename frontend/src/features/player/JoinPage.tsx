@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useKeepScreenOn } from '../../shared/device/keepScreenOn'
 import { useNavigate, useParams } from 'react-router'
 import { ApiError, api, errorMessage, messageForCode, type RoomState, type TeamId } from '../../shared/api/client'
 import { session } from '../../shared/session/session'
@@ -10,6 +11,7 @@ import { GameLogo } from '../../shared/ui/GameLogo'
  * Spec 003 (T815, AC-66): equipos con su nombre actual y su color, y quién es su capitán.
  */
 export function JoinPage() {
+  useKeepScreenOn() // spec 010, AC-129
   const { code = '' } = useParams()
   const navigate = useNavigate()
   const [name, setName] = useState('')

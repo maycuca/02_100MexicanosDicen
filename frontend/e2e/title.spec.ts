@@ -18,7 +18,7 @@ import {
  */
 
 /** Valores por defecto del contrato v0.5.0 (CreateRoomRequest). */
-const DEFAULTS = { rounds: 5, targetScore: 300, turnSeconds: 20, autoStrikeOnTimeout: true }
+const DEFAULTS = { rounds: 5, targetScore: 300, turnSeconds: 10, autoStrikeOnTimeout: true } // spec 010, AC-134
 
 type RoomSnapshot = { totalRounds: number; targetScore: number; turnSeconds: number; autoStrikeOnTimeout: boolean; teams: { id: string; name: string }[] }
 

@@ -195,8 +195,8 @@ pm.test('AC-02 por defecto: Equipo Rojo / Equipo Verde, 5 rondas, meta 300', () 
   pm.expect(b.state.teams.find(t => t.id === 'A').name).to.equal('Equipo Rojo');
   pm.expect(b.state.teams.find(t => t.id === 'B').name).to.equal('Equipo Verde');
 });
-pm.test('AC-46 AC-53 por defecto: turnSeconds 20, autoStrikeOnTimeout true, soundEnabled true', () => {
-  pm.expect(b.state.turnSeconds).to.equal(20);
+pm.test('AC-46 AC-53 AC-134 por defecto: turnSeconds 10, autoStrikeOnTimeout true, soundEnabled true', () => {
+  pm.expect(b.state.turnSeconds).to.equal(10);
   pm.expect(b.state.autoStrikeOnTimeout).to.equal(true);
   pm.expect(b.state.soundEnabled).to.equal(true);
 });
@@ -859,7 +859,7 @@ def build() -> dict:
         "info": {
             "name": "Cien Mexicanos API",
             "description": (
-                "Flujo encadenado derivado de specs/001-juego-base/contracts/openapi.yaml (v0.8.0, specs 001, 002, 003, 005, 006 y 008). "
+                "Flujo encadenado derivado de specs/001-juego-base/contracts/openapi.yaml (v0.9.0, specs 001, 002, 003, 005, 006, 008 y 010). "
                 "Ejecutar completo y en orden contra un backend recién levantado. Regenerar al cambiar el contrato: "
                 "python3 postman/scripts/generate_collection.py"
             ),

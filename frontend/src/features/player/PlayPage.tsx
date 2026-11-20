@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useKeepScreenOn } from '../../shared/device/keepScreenOn'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError, api, messageForCode, type Player, type RoomState } from '../../shared/api/client'
 import { session } from '../../shared/session/session'
@@ -32,6 +33,7 @@ const VIBRATE_GAP_MS = 800
  * Spec 005: cuenta regresiva detenida (AC-82). Spec 007: sala cerrada → /gracias (AC-113); resultados de fiesta (AC-116).
  */
 export function PlayPage() {
+  useKeepScreenOn() // spec 010, AC-129
   const { code = '' } = useParams()
   const navigate = useNavigate()
   const [token] = useState(() => session.getPlayerToken(code))

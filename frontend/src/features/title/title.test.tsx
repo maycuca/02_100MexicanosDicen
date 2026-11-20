@@ -141,7 +141,8 @@ describe('modal de AJUSTES (T812)', () => {
     const dialog = await openSettings(user)
     expect(within(dialog).getByRole('spinbutton', { name: 'Rondas' })).toHaveAttribute('aria-valuenow', '5')
     expect(within(dialog).getByRole('spinbutton', { name: 'Meta de puntos' })).toHaveAttribute('aria-valuetext', '300 pts')
-    expect(within(dialog).getByRole('spinbutton', { name: 'Temporizador' })).toHaveAttribute('aria-valuetext', '20 s')
+    // spec 010 AC-134: turno de 10 s por defecto
+    expect(within(dialog).getByRole('spinbutton', { name: 'Temporizador' })).toHaveAttribute('aria-valuetext', '10 s')
     expect(within(dialog).getByRole('switch', { name: 'X automática' })).toHaveAttribute('aria-checked', 'true')
     // El foco entra al modal.
     expect(within(dialog).getByRole('spinbutton', { name: 'Rondas' })).toHaveFocus()
@@ -170,7 +171,6 @@ describe('modal de AJUSTES (T812)', () => {
     const dialog = await openSettings(user)
     const timer = within(dialog).getByRole('spinbutton', { name: 'Temporizador' })
     timer.focus()
-    await user.keyboard('{ArrowLeft}{ArrowLeft}')
     expect(timer).toHaveAttribute('aria-valuetext', '10 s')
     await user.keyboard('{ArrowLeft}')
     expect(timer).toHaveAttribute('aria-valuetext', 'Sin temporizador')
@@ -273,20 +273,24 @@ describe('sonidos del menú (T813)', () => {
     await waitFor(() => expect(playedSounds()).toEqual(['menuMove', 'menuSelect']))
   })
 
-  it('AC-59 sin la preferencia de sonido no suena nada', async () => {
+  it('AC-59 · spec 010 AC-133 con el sonido desactivado no suena nada', async () => {
+    localStorage.setItem('cm:sound', 'off')
     const user = userEvent.setup()
     renderRoute('/')
     await user.keyboard('{ArrowDown}{ArrowUp}')
     expect(audioContext()).toBeUndefined()
   })
 
-  it('AC-59 / AC-52 el modal permite activar el sonido y lo recuerda', async () => {
+  it('AC-59 / AC-52 · spec 010 AC-133 el sonido viene activado; el modal permite apagarlo y encenderlo y lo recuerda', async () => {
     const user = userEvent.setup()
     renderRoute('/')
     await user.keyboard('{ArrowDown}{Enter}')
     const dialog = await screen.findByRole('dialog', { name: 'Ajustes' })
     const soundSwitch = within(dialog).getByRole('switch', { name: 'Sonido' })
+    expect(soundSwitch).toHaveAttribute('aria-checked', 'true')
+    await user.click(soundSwitch)
     expect(soundSwitch).toHaveAttribute('aria-checked', 'false')
+    expect(localStorage.getItem('cm:sound')).toBe('off')
     await user.click(soundSwitch)
     expect(soundSwitch).toHaveAttribute('aria-checked', 'true')
     expect(localStorage.getItem('cm:sound')).toBe('on')

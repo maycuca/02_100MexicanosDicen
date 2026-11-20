@@ -85,7 +85,7 @@ test.describe('T601 partida completa: TV + presentador + 2 jugadores', () => {
     try {
       // --- AC-02 / AC-29 crear sala y abrir la pantalla de inicio
       // T822 (spec 003): la sala se crea desde la pantalla de título (AJUSTES → EMPEZAR), sin nombres de equipo.
-      // T727: desde la spec 002 el temporizador viene en 20 s con X automática; esta prueba no es del temporizador.
+      // T727: desde la spec 002 el temporizador viene activo (10 s desde la spec 010) con X automática; esta prueba no es del temporizador.
       const code = await createRoomFromTitle(tv.page, { rounds: 3, turnSeconds: 0 })
       expect(code).toMatch(ROOM_CODE)
       await expect(logo(tv.page)).toBeVisible() // AC-61 logotipo en la cabecera de /screen
