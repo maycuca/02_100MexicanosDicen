@@ -429,10 +429,10 @@ class TurnRulesTest {
     class Configuration {
 
         @Test
-        @DisplayName("AC-46 por defecto: 20 s, X automática y sonido activado")
+        @DisplayName("AC-46 · spec 010 AC-134 por defecto: 10 s, X automática y sonido activado")
         void defaults() {
             Room room = Fixtures.room(5, 300);
-            assertThat(room.turnSeconds()).isEqualTo(20);
+            assertThat(room.turnSeconds()).isEqualTo(10);
             assertThat(room.autoStrikeOnTimeout()).isTrue();
             assertThat(room.soundEnabled()).isTrue();
         }

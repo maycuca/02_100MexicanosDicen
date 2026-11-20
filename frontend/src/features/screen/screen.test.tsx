@@ -271,7 +271,8 @@ describe('TV: experiencia de juego (spec 002: T711, T712, T713)', () => {
   describe('sonido (AC-51, AC-52, AC-53)', () => {
     beforeEach(() => installFakeAudio())
 
-    it('AC-51 sin la preferencia de sonido (AJUSTES → Sonido) la TV no suena aunque se toque', async () => {
+    it('AC-51 · spec 010 AC-133 con el sonido desactivado (AJUSTES → Sonido: No) la TV no suena aunque se toque', async () => {
+      localStorage.setItem('cm:sound', 'off')
       setup(playingState())
       const user = userEvent.setup()
       renderRoute('/screen/KDMZ')
@@ -280,6 +281,17 @@ describe('TV: experiencia de juego (spec 002: T711, T712, T713)', () => {
       act(() => lastClient().connect())
       act(() => lastClient().emit('/topic/rooms/KDMZ/events', { type: 'ANSWER_REVEALED', version: 11, position: 2 }))
       expect(playedSounds()).toEqual([])
+    })
+
+    it('spec 010 AC-133 sin preferencia guardada el sonido está activado: suena desde el primer toque', async () => {
+      setup(playingState())
+      const user = userEvent.setup()
+      renderRoute('/screen/KDMZ')
+      await screen.findByTestId('team-panel-B')
+      await user.click(screen.getByTestId('team-panel-B')) // gesto: desbloquea el audio
+      act(() => lastClient().connect())
+      act(() => lastClient().emit('/topic/rooms/KDMZ/events', { type: 'ANSWER_REVEALED', version: 11, position: 2 }))
+      expect(playedSounds()).toEqual(['reveal'])
     })
 
     it('AC-51 · spec 005 AC-88 · AC-89 con la preferencia activa, el primer toque reanuda el audio: júbilo al revelar, aviso al fallar el cara a cara', async () => {

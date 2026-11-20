@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Cien Mexicanos API
-  version: 0.8.0
+  version: 0.9.0
   description: |
     API REST del juego "Cien Mexicanos" (spec 001-juego-base).
     Las acciones del presentador requieren el header `X-Presenter-Token`.
@@ -450,8 +450,8 @@ components:
         rounds: { type: integer, minimum: 3, maximum: 8, default: 5 }
         targetScore: { type: integer, minimum: 50, maximum: 1000, default: 300 }
         turnSeconds:
-          description: 0 = sin temporizador; si no, 10–60 (spec 002, AC-46)
-          default: 20
+          description: 0 = sin temporizador; si no, 10–60 (spec 002, AC-46). Por defecto 10 desde la spec 010 (AC-134)
+          default: 10
           oneOf:
             - { type: integer, const: 0 }
             - { type: integer, minimum: 10, maximum: 60 }

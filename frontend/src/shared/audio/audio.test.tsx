@@ -110,6 +110,16 @@ describe('preferencia de sonido (AC-52)', () => {
     expect(result.current.active).toBe(true)
   })
 
+  it('spec 010 AC-133 sin preferencia guardada el sonido está activado; "off" lo apaga', () => {
+    localStorage.removeItem('cm:sound')
+    expect(getSoundPreference()).toBe(true)
+    setSoundPreference(false)
+    expect(localStorage.getItem('cm:sound')).toBe('off')
+    expect(getSoundPreference()).toBe(false)
+    setSoundPreference(true)
+    expect(getSoundPreference()).toBe(true)
+  })
+
   it('funciona aunque localStorage falle (modo privado)', () => {
     const spy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('bloqueado')
@@ -117,7 +127,7 @@ describe('preferencia de sonido (AC-52)', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('bloqueado')
     })
-    expect(getSoundPreference()).toBe(false)
+    expect(getSoundPreference()).toBe(true) // spec 010 AC-133: activado por defecto
     expect(() => setSoundPreference(true)).not.toThrow()
     spy.mockRestore()
     vi.restoreAllMocks()

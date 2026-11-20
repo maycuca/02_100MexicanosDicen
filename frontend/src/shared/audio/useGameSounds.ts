@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GameEvent, GameEventType } from '../realtime/messages'
 import { URGENT_SECONDS, secondsLeft, useCountdown } from '../ui/useCountdown'
+import { GESTURES } from '../device/gestures'
 import { getSoundPreference, setSoundPreference } from './preference'
 import { isAudioSupported, isAudioUnlocked, playSound, unlockAudio, type SoundName } from './synth'
 
@@ -55,7 +56,6 @@ export function useGameSounds({ enabled, deadline }: { enabled: boolean; deadlin
   return { handleEvent }
 }
 
-const GESTURES = ['pointerdown', 'keydown', 'touchend'] as const
 
 /**
  * Botón "Activar sonido" de la TV (AC-52). La preferencia se recuerda en localStorage;

@@ -104,24 +104,24 @@ class RoomProjectionsTest {
     @Test
     @DisplayName("spec 002 AC-35 AC-41 AC-46 AC-47 AC-53 campos nuevos en ambas proyecciones")
     void turnFields() {
-        Room room = playingRoom(); // control A, 20 s por defecto, assignControl en EPOCH
+        Room room = playingRoom(); // control A, 10 s por defecto (spec 010, AC-134), assignControl en EPOCH
         room.strike(Instant.EPOCH.plusMillis(1500));
         room.controlTimer(mx.cienmexicanos.game.domain.TimerAction.START, Instant.EPOCH.plusMillis(1500)); // spec 005
         for (var round : List.of(RoomProjections.publicState(room).round(),
                 RoomProjections.presenterState(room).round())) {
             assertThat(round.activeTeam()).isEqualTo(TeamId.A);
             assertThat(round.strikesByTeam()).containsEntry(TeamId.A, 1).containsEntry(TeamId.B, 0);
-            assertThat(round.turnDeadline()).isEqualTo("1970-01-01T00:00:21.500Z");
+            assertThat(round.turnDeadline()).isEqualTo("1970-01-01T00:00:11.500Z");
             assertThat(round.timerRunning()).isTrue();
-            assertThat(round.timerRemainingMs()).isEqualTo(20_000);
+            assertThat(round.timerRemainingMs()).isEqualTo(10_000);
         }
         room.setSound(false);
         RoomState pub = RoomProjections.publicState(room);
         PresenterRoomState pres = RoomProjections.presenterState(room);
-        assertThat(pub.turnSeconds()).isEqualTo(20);
+        assertThat(pub.turnSeconds()).isEqualTo(10);
         assertThat(pub.autoStrikeOnTimeout()).isTrue();
         assertThat(pub.soundEnabled()).isFalse();
-        assertThat(pres.turnSeconds()).isEqualTo(20);
+        assertThat(pres.turnSeconds()).isEqualTo(10);
         assertThat(pres.autoStrikeOnTimeout()).isTrue();
         assertThat(pres.soundEnabled()).isFalse();
     }

@@ -317,7 +317,7 @@ class RestApiTest {
     void timerDefaults() throws Exception {
         mvc.perform(post("/api/rooms"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.state.turnSeconds").value(20))
+                .andExpect(jsonPath("$.state.turnSeconds").value(10)) // spec 010, AC-134
                 .andExpect(jsonPath("$.state.autoStrikeOnTimeout").value(true))
                 .andExpect(jsonPath("$.state.soundEnabled").value(true));
         Created c = createRoom("{\"turnSeconds\":0,\"autoStrikeOnTimeout\":false}");
